@@ -13,8 +13,8 @@ export default function MembershipPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    const success = searchParams.get("success") === "true"
-    const priceId = searchParams.get("priceId")
+    const success = searchParams?.get("success") === "true"
+    const priceId = searchParams?.get("priceId")
 
     if (success && priceId) {
       const duration = priceId === membershipOptions.weekly.stripePriceId ? 7 : 30
