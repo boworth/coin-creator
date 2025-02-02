@@ -9,6 +9,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const body = await request.text()
@@ -67,12 +70,4 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
-}
-
-// Add this instead
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-  runtime: 'nodejs'
 } 
