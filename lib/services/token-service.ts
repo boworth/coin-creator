@@ -1,6 +1,7 @@
-import { MetadataTestBench } from "@/testbench/metadata-test-bench"
-import { TokenTestBench } from "@/testbench/token-test-bench"
-import { TokenBurnTestBench } from "@/testbench/token-burn-test-bench"
+// Comment out or remove these imports if not used
+// import { metadataTestBench } from "@/testbench/metadata-test-bench"
+// import { tokenTestBench } from "@/testbench/token-test-bench"
+// import { tokenBurnTestBench } from "@/testbench/token-burn-test-bench"
 import { Connection, PublicKey } from "@solana/web3.js"
 import { WalletContextState } from "@solana/wallet-adapter-react"
 import { Metaplex } from "@metaplex-foundation/js"
