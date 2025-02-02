@@ -69,8 +69,10 @@ export async function POST(request: Request) {
   }
 }
 
-// Add this new export instead
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-// If you need to disable body parsing for Stripe webhooks
-export const bodyParser = false; 
+// Add this instead
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+  runtime: 'nodejs'
+} 
