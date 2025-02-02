@@ -9,7 +9,7 @@ import { Wallet, CreditCard } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { loadStripe } from "@stripe/stripe-js"
 import { useSearchParams } from 'next/navigation'
-import { checkStripeSession } from '@/services/membership-service'
+import { MembershipService } from "@/src/services/membership-service"
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' 
@@ -111,7 +111,7 @@ export function PaymentChoiceDialog({
     const validateSession = async () => {
       if (sessionId) {
         try {
-          const session = await checkStripeSession(sessionId)
+          const session = await MembershipService.checkStripeSession(sessionId)
           if (session.payment_status === 'paid') {
             setIsMembershipActive(true)
             // Optional: Trigger a global state update or refresh
