@@ -1,15 +1,14 @@
 import { WalletProviders } from "./providers"
-import { Toaster } from "@/components/ui/toaster"
-import { AnimatedBackground } from "@/components/animated-background"
+import { AnimatedBackground } from "../components/animated-background"
 import { MotionConfig } from "framer-motion"
-import { NavMenu } from "@/components/nav-menu"
-import { WalletConnect } from "@/components/wallet-connect"
-import { Footer } from "@/components/footer"
-import { MembershipProvider } from "@/contexts/membership-context"
+import { NavMenu } from "../components/nav-menu"
+import { WalletConnect } from "../components/wallet-connect"
+import { Footer } from "../components/footer"
+import { MembershipProvider } from "../contexts/membership-context"
+import { Analytics } from '@vercel/analytics/react'
 import "@/app/globals.css"
 import "@/styles/create-token-button.css"
 import '../styles/globals.css'
-import { Analytics } from '@vercel/analytics/react'
 
 export const dynamic = "force-dynamic"
 
@@ -36,7 +35,6 @@ export default function RootLayout({
             </MembershipProvider>
           </WalletProviders>
         </MotionConfig>
-        <Toaster />
         <Analytics />
       </body>
     </html>

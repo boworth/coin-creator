@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Upload, X, CheckCircle, Search, ExternalLink } from "lucide-react"
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useToast } from "@/components/ui/use-toast"
 import { motion } from "framer-motion"
 import { Label } from "@/components/ui/label"
 import { useMembership } from "@/contexts/membership-context"
@@ -169,7 +168,6 @@ const LoadingDots = () => (
  * @component
  */
 export function TokenCreator() {
-  const { toast } = useToast()
   const { isActive } = useMembership()
   const [isCreating, setIsCreating] = useState(false)
   const { connection } = useConnection()
@@ -195,6 +193,7 @@ export function TokenCreator() {
     };
   } | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -228,62 +227,32 @@ export function TokenCreator() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsCreating(true)
-      console.log("Starting token creation with values:", values)
+      setStatus(null) // Clear previous status
 
-      // Check wallet connection
       if (!wallet.connected || !wallet.publicKey) {
         throw new Error("Please connect your wallet first")
       }
 
-      // Create token service instance
       const service = new TokenService(connection, wallet)
       
-      // Map form values to TokenCreationParams
-      const params: TokenCreationParams = {
-        tokenName: values.tokenName,
-        tokenSymbol: values.tokenSymbol,
-        decimals: values.decimals,
-        initialSupply: values.supply,
-        description: values.description || undefined,
-        logo: values.logo,
-        // Map premium features explicitly
-        revokeMintAuthority: Boolean(values.revokeMintAuthority),
-        revokeFreezeAuthority: Boolean(values.revokeFreezeAuthority),
-      }
+      setStatus("Creating token... Please approve the transaction in your wallet")
 
-      console.log("Premium features state:", {
-        revokeMintAuthority: params.revokeMintAuthority,
-        revokeFreezeAuthority: params.revokeFreezeAuthority,
-      })
-
-      // Show pending toast
-      toast({
-        title: "Creating Token",
-        description: "Please approve the transaction in your wallet",
-      })
-
-      const result = await service.createToken(params)
-      console.log("Token creation result:", result)
+      const result = await service.createToken(values)
 
       if (result.success) {
-        // Set the created token details
         setCreatedToken({
           mintAddress: result.mintAddress,
           signature: result.signature,
           verifications: result.verifications
-        });
-        // Show the success dialog
-        setShowSuccessDialog(true);
+        })
+        setShowSuccessDialog(true)
+        setStatus("Token created successfully!")
       } else {
         throw new Error(result.error || "Token creation failed")
       }
     } catch (error) {
       console.error("Token creation error:", error)
-      toast({
-        variant: "destructive",
-        title: "Creation Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred"
-      })
+      setStatus(error instanceof Error ? error.message : "An error occurred")
     } finally {
       setIsCreating(false)
     }
@@ -420,11 +389,7 @@ export function TokenCreator() {
                       console.log("Form validation failed with errors:", relevantErrors)
                       // Show validation errors to user
                       relevantErrors.forEach(([field, error]) => {
-                        toast({
-                          variant: "destructive",
-                          title: `Invalid ${field}`,
-                          description: error?.message
-                        })
+                        console.error(`Invalid ${field}:`, error?.message)
                       })
                       return
                     }
@@ -433,11 +398,7 @@ export function TokenCreator() {
                     await onSubmit(values)
                   } catch (error) {
                     console.error("Form submission error:", error)
-                    toast({
-                      variant: "destructive",
-                      title: "Submission Error",
-                      description: error instanceof Error ? error.message : "An error occurred"
-                    })
+                    setStatus(error instanceof Error ? error.message : "An error occurred")
                   }
                 }} 
                 className="space-y-6"
@@ -561,11 +522,7 @@ export function TokenCreator() {
                                     const file = e.target.files?.[0];
                                     if (file) {
                                       if (file.size > MAX_FILE_SIZE) {
-                                        toast({
-                                          title: "Error",
-                                          description: "File size must be less than 5MB",
-                                          variant: "destructive",
-                                        });
+                                        console.error("File size must be less than 5MB")
                                         return;
                                       }
                                       const imageUrl = URL.createObjectURL(file);
@@ -673,6 +630,15 @@ export function TokenCreator() {
         form={form}
       />
       <SuccessDialog />
+      {status && (
+        <div className={`mt-4 p-4 rounded ${
+          status.includes("error") || status.includes("failed") 
+            ? "bg-red-100 text-red-700" 
+            : "bg-blue-100 text-blue-700"
+        }`}>
+          {status}
+        </div>
+      )}
     </ErrorBoundary>
   )
 }
@@ -695,7 +661,6 @@ function ImageCropModal({ isOpen, onClose, imageUrl, onCropComplete, form }: Ima
         y: 0
     });
     const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
-    const { toast } = useToast();
 
     // Add back the onImageLoad handler with proper 1:1 initialization
     const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -726,11 +691,6 @@ function ImageCropModal({ isOpen, onClose, imageUrl, onCropComplete, form }: Ima
 
     const handleCropComplete = useCallback(async () => {
         if (!completedCrop || !imgRef.current) {
-            toast({
-                title: "Error",
-                description: "Please create a valid crop before proceeding",
-                variant: "destructive",
-            });
             return;
         }
 
@@ -744,13 +704,8 @@ function ImageCropModal({ isOpen, onClose, imageUrl, onCropComplete, form }: Ima
             onCropComplete(croppedFile);
         } catch (error) {
             console.error('Error cropping image:', error);
-            toast({
-                title: "Error",
-                description: "Failed to crop image",
-                variant: "destructive",
-            });
         }
-    }, [completedCrop, imageUrl, onCropComplete, toast]);
+    }, [completedCrop, imageUrl, onCropComplete]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

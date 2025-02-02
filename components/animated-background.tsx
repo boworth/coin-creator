@@ -14,12 +14,12 @@ export const AnimatedBackground: React.FC = () => {
     if (!ctx) return
 
     let animationFrameId: number
-    let mouseX = 0
-    let mouseY = 0
+    let mouseX = window.innerWidth / 2  // Start at center
+    let mouseY = window.innerHeight / 2 // Start at center
     const gridSize = 40
     const effectRadius = 150
     const effectStrength = 30
-    const visibilityRadius = 300 // Decreased by 25% from 400
+    const visibilityRadius = 300
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth
@@ -107,4 +107,3 @@ export const AnimatedBackground: React.FC = () => {
 
   return <canvas ref={canvasRef} className="fixed inset-0 z-[-1]" />
 }
-

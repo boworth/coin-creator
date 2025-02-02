@@ -11,7 +11,7 @@ const nextConfig = {
   poweredByHeader: false, // Security best practice
   compress: true,
   reactStrictMode: true,
-  swcMinify: true,
+  swcMinify: false,
   // Add content security policies
   async headers() {
     return [
@@ -57,6 +57,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    forceSwcTransforms: false,
   }
 }
 
