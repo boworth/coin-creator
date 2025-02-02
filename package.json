@@ -107,7 +107,8 @@
     "elliptic": "^6.5.8",
     "crypto-js": "^4.2.0",
     "@ethersproject/providers": "^5.7.3",
-    "axios": "^1.6.7"
+    "axios": "^1.6.7",
+    "bs58": "^6.0.0"
   },
   "overrides": {
     "crypto-js": "^4.2.0",
