@@ -1,0 +1,151 @@
+.create-token-btn {
+  background-color: #1a0b2e;
+  color: white;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(139, 0, 255, 0.3);
+}
+
+.create-token-btn:hover {
+  box-shadow: 0 0 30px rgba(139, 0, 255, 0.4);
+}
+
+.create-token-btn::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: linear-gradient(
+      45deg,
+      rgba(180, 160, 255, 1) /* Pale purple */,
+      rgba(255, 105, 180, 1) /* Hot pink */,
+      rgba(255, 127, 0, 1) /* Vivid orange */,
+      rgba(255, 215, 0, 1) /* Bright yellow */,
+      rgba(255, 127, 80, 1) /* Coral */,
+      rgba(139, 0, 255, 1) /* Back to purple */
+    ), linear-gradient(to right, transparent, rgba(255, 255, 255, 0.95), transparent);
+  background-size: 300% 300%, 200% 100%;
+  background-position: 0 0, 0 0;
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  transition: opacity 0.3s ease;
+  animation: liquidFlow 15s linear infinite, shine 5s linear infinite, moveShine 4s linear infinite;
+  z-index: 1;
+  filter: contrast(1.3) brightness(1.4);
+}
+
+.create-token-btn::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(to bottom, rgba(26, 11, 46, 0.3), rgba(26, 11, 46, 0.5));
+  z-index: 2;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.create-token-btn:hover::after {
+  opacity: 0.2;
+}
+
+@keyframes liquidFlow {
+  0% {
+    background-position: 0% 0%, 0 0;
+    filter: hue-rotate(0deg) brightness(1.4);
+  }
+  50% {
+    filter: hue-rotate(10deg) brightness(1.5);
+  }
+  100% {
+    background-position: 300% 0%, 0 0;
+    filter: hue-rotate(0deg) brightness(1.4);
+  }
+}
+
+@keyframes shine {
+  0% {
+    filter: contrast(1.3) brightness(1.4) saturate(1.3);
+  }
+  50% {
+    filter: contrast(1.4) brightness(1.5) saturate(1.4);
+  }
+  100% {
+    filter: contrast(1.3) brightness(1.4) saturate(1.3);
+  }
+}
+
+@keyframes moveShine {
+  0% {
+    background-position: 0 0, -200% 0;
+  }
+  100% {
+    background-position: 0 0, 200% 0;
+  }
+}
+
+.create-token-btn,
+.retrieve-tokens-btn {
+  background-color: #1a0b2e;
+  color: white;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(139, 0, 255, 0.3);
+}
+
+.create-token-btn:hover,
+.retrieve-tokens-btn:hover {
+  box-shadow: 0 0 30px rgba(139, 0, 255, 0.4);
+}
+
+.create-token-btn::before,
+.retrieve-tokens-btn::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: linear-gradient(
+      45deg,
+      rgba(180, 160, 255, 1) /* Pale purple */,
+      rgba(255, 105, 180, 1) /* Hot pink */,
+      rgba(255, 127, 0, 1) /* Vivid orange */,
+      rgba(255, 215, 0, 1) /* Bright yellow */,
+      rgba(255, 127, 80, 1) /* Coral */,
+      rgba(139, 0, 255, 1) /* Back to purple */
+    ), linear-gradient(to right, transparent, rgba(255, 255, 255, 0.95), transparent);
+  background-size: 300% 300%, 200% 100%;
+  background-position: 0 0, 0 0;
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  transition: opacity 0.3s ease;
+  animation: liquidFlow 15s linear infinite, shine 5s linear infinite, moveShine 4s linear infinite;
+  z-index: 1;
+  filter: contrast(1.3) brightness(1.4);
+}
+
+.create-token-btn::after,
+.retrieve-tokens-btn::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: linear-gradient(to bottom, rgba(26, 11, 46, 0.3), rgba(26, 11, 46, 0.5));
+  z-index: 2;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.create-token-btn:hover::after,
+.retrieve-tokens-btn:hover::after {
+  opacity: 0.2;
+}
+
+.create-token-btn.small {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
