@@ -28,74 +28,52 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
     }
 ];
 
+// Default to a known address or throw an error if env var is missing
+export const RECEIVER_ADDRESS = new PublicKey(
+    TREASURY_WALLET || 
+    // You should replace this with your actual fallback address
+    "11111111111111111111111111111111"
+);
+
 export class MembershipService {
-    private connection: Connection;
-    private wallet: WalletContextState;
+    constructor(
+        private connection: Connection,
+        private wallet: WalletContextState
+    ) {}
 
-    constructor(connection: Connection, wallet: WalletContextState) {
-        this.connection = connection;
-        this.wallet = wallet;
-    }
-
-    async purchaseWithSol(planId: string): Promise<{ success: boolean; signature?: string; error?: string }> {
+    async purchaseWithSol(plan: "weekly" | "monthly") {
         try {
-            if (!this.wallet.publicKey) {
+            if (!this.wallet.publicKey || !this.wallet.signTransaction) {
                 throw new Error("Wallet not connected");
             }
 
-            // Find the plan
-            const plan = MEMBERSHIP_PLANS.find(p => p.id === planId);
-            if (!plan) {
-                throw new Error("Invalid plan selected");
+            // Verify receiver address is set
+            if (!TREASURY_WALLET || RECEIVER_ADDRESS.equals(new PublicKey("11111111111111111111111111111111"))) {
+                throw new Error("Treasury wallet not configured. Please contact support.");
             }
 
-            // Get latest blockhash
-            const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('finalized');
+            const amount = plan === "weekly" ? 1 : 3 // SOL amount
 
-            // Create transaction
-            const transaction = new Transaction();
+            const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                    fromPubkey: this.wallet.publicKey,
+                    toPubkey: RECEIVER_ADDRESS,
+                    lamports: amount * 1_000_000_000, // Convert SOL to lamports
+                })
+            );
+
+            const { blockhash } = await this.connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = this.wallet.publicKey;
 
-            // Create payment instruction
-            const paymentInstruction = SystemProgram.transfer({
-                fromPubkey: this.wallet.publicKey,
-                toPubkey: TREASURY_WALLET,
-                lamports: Math.round(plan.solPrice * 1e9), // Ensure proper rounding
-            });
+            const signedTx = await this.wallet.signTransaction(transaction);
+            const txId = await this.connection.sendRawTransaction(signedTx.serialize());
+            await this.connection.confirmTransaction(txId);
 
-            transaction.add(paymentInstruction);
-
-            // Send transaction
-            const signature = await this.wallet.sendTransaction(transaction, this.connection, {
-                skipPreflight: true
-            });
-
-            // Wait for confirmation with a longer timeout
-            const confirmation = await this.connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            }, 'confirmed');
-
-            if (confirmation.value.err) {
-                throw new Error(`Transaction failed: ${confirmation.value.err}`);
-            }
-
-            // Update membership status
-            await this.updateMembershipStatus(planId, this.wallet.publicKey.toString());
-
-            return {
-                success: true,
-                signature: signature.toString()
-            };
-
+            return { success: true, signature: txId };
         } catch (error) {
-            console.error("Error purchasing membership with SOL:", error);
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : "Failed to purchase membership"
-            };
+            console.error("Error in purchaseWithSol:", error);
+            return { success: false, error: error instanceof Error ? error.message : "Transaction failed" };
         }
     }
 
@@ -181,17 +159,14 @@ export class MembershipService {
 }
 
 export async function checkStripeSession(sessionId: string) {
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ['customer', 'subscription']
-  })
-
-  if (!session.customer || !session.subscription) {
-    throw new Error('Invalid session data')
-  }
-
-  return {
-    payment_status: session.payment_status,
-    customer_id: session.customer,
-    subscription_id: session.subscription
-  }
+    try {
+        const response = await fetch(`/api/check-session?sessionId=${sessionId}`)
+        if (!response.ok) {
+            throw new Error('Failed to check session status')
+        }
+        return await response.json()
+    } catch (error) {
+        console.error('Error checking session:', error)
+        throw error
+    }
 } 

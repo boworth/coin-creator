@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useState, useEffect } from "react"
-import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
 import { Separator } from "@/components/ui/separator"
 import { useMembership } from "@/contexts/membership-context"
@@ -77,7 +76,6 @@ const formSchema = z.object({
 })
 
 export function MetadataUpdater() {
-  const { toast } = useToast()
   const [isUpdating, setIsUpdating] = useState(false)
   const [currentMetadata, setCurrentMetadata] = useState<any>(null)
   const [usdValue, setUsdValue] = useState<number | null>(null)
@@ -157,11 +155,6 @@ export function MetadataUpdater() {
 
     } catch (error) {
       console.error('Failed to load metadata:', error)
-      toast({
-        variant: "destructive",
-        title: "Failed to Load Metadata",
-        description: error instanceof Error ? error.message : "Failed to load token metadata"
-      })
     } finally {
       setIsLoading(false)
     }
@@ -199,17 +192,8 @@ export function MetadataUpdater() {
         throw new Error(result.error || 'Failed to update metadata')
       }
 
-      toast({
-        title: "Metadata Updated",
-        description: "Your token's metadata has been successfully updated.",
-      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update metadata')
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: err instanceof Error ? err.message : "Failed to update metadata"
-      })
     } finally {
       setIsLoading(false)
     }
@@ -246,11 +230,6 @@ export function MetadataUpdater() {
             makeImmutable: makeImmutable
         });
 
-        toast({
-            title: "Success",
-            description: "Token metadata has been updated successfully!",
-            variant: "default",
-        });
     } catch (error) {
         console.error("Metadata update failed:", error);
         
@@ -266,12 +245,6 @@ export function MetadataUpdater() {
                 errorMessage = "Invalid token address. Please check and try again.";
             }
         }
-
-        toast({
-            title: "Error",
-            description: errorMessage,
-            variant: "destructive",
-        });
     } finally {
         setIsUpdating(false);
     }

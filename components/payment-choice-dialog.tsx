@@ -6,10 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion"
 import { Wallet, CreditCard } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
 import { loadStripe } from "@stripe/stripe-js"
 import { useSearchParams } from 'next/navigation'
-import { checkStripeSession } from '@/services/membership-service'
+import { checkStripeSession } from '@/src/services/membership-service'
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' 
@@ -100,7 +99,7 @@ export function PaymentChoiceDialog({
   walletAddress,
   isWalletConnected,
 }: PaymentChoiceDialogProps) {
-  const { toast } = useToast()
+  const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<"sol" | "stripe">("sol")
   const searchParams = useSearchParams()
@@ -128,6 +127,7 @@ export function PaymentChoiceDialog({
   const handleStripePayment = async () => {
     try {
       setIsProcessing(true)
+      setError(null) // Clear any previous errors
       
       // Add validation
       if (!priceId) {
@@ -187,11 +187,7 @@ export function PaymentChoiceDialog({
 
     } catch (error) {
       console.error("Payment error:", error)
-      toast({
-        title: "Payment Error",
-        description: error instanceof Error ? error.message : "Payment processing failed. Please try again.",
-        variant: "destructive",
-      })
+      setError(error instanceof Error ? error.message : "Payment processing failed. Please try again.")
     } finally {
       setIsProcessing(false)
     }
@@ -246,6 +242,14 @@ export function PaymentChoiceDialog({
     </motion.div>
   )
 
+  const handleButtonClick = () => {
+    if (!isWalletConnected) {
+      setError("Please connect your wallet to continue with the payment")
+      return
+    }
+    handlePayment(selectedMethod)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] relative fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
@@ -255,6 +259,13 @@ export function PaymentChoiceDialog({
             <DialogTitle>Choose Payment Method</DialogTitle>
             <DialogDescription>Select how you'd like to pay for your membership</DialogDescription>
           </DialogHeader>
+          
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+
           <div className="grid gap-4 py-4">
             <PaymentButton
               method="sol"
@@ -277,17 +288,7 @@ export function PaymentChoiceDialog({
             </Button>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                onClick={() => {
-                  if (!isWalletConnected) {
-                    toast({
-                      title: "Wallet Required",
-                      description: "Please connect your wallet to continue with the payment",
-                      variant: "destructive",
-                    })
-                    return
-                  }
-                  handlePayment(selectedMethod)
-                }}
+                onClick={handleButtonClick}
                 disabled={isActivating || isProcessing || (selectedMethod === "stripe" && !isWalletConnected)}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-all duration-300 ease-out"
               >

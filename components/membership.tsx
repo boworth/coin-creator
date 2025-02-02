@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { loadStripe } from "@stripe/stripe-js"
 import { useMembership } from "@/contexts/membership-context"
@@ -64,14 +63,11 @@ export function Membership() {
   const { isActive, timeRemaining, isLoading, activateMembership } = useMembership()
   const [selectedOption, setSelectedOption] = useState<MembershipOption>("monthly")
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
-  const { toast } = useToast()
   const { publicKey, connected, wallet: walletContext } = useWallet()
   const { connection } = useConnection()
-  const membershipService = new MembershipService(
-    connection, 
-    walletContext?.adapter
-  )
+  const membershipService = new MembershipService(connection, walletContext?.adapter)
   const [isActivating, setIsActivating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleMembershipActivation = () => {
     setIsPaymentDialogOpen(true)
@@ -80,11 +76,7 @@ export function Membership() {
   const handlePaymentChoice = async (method: "sol" | "stripe") => {
     if (method === "stripe") {
       if (!publicKey) {
-        toast({
-          title: "Error",
-          description: "Please connect your wallet first",
-          variant: "destructive",
-        })
+        setError("Please connect your wallet first")
         return
       }
 
@@ -110,30 +102,18 @@ export function Membership() {
         })
         const session = await response.json()
         if (session.error) {
-          toast({
-            title: "Payment Error",
-            description: session.error.message,
-            variant: "destructive",
-          })
+          setError(session.error.message)
         } else {
           const result = await stripe!.redirectToCheckout({
             sessionId: session.id,
           })
           if (result.error) {
-            toast({
-              title: "Payment Error",
-              description: result.error.message,
-              variant: "destructive",
-            })
+            setError(result.error.message)
           }
         }
       } catch (error) {
         console.error("Error activating membership:", error)
-        toast({
-          title: "Error",
-          description: "Failed to activate membership. Please try again.",
-          variant: "destructive",
-        })
+        setError("Failed to activate membership. Please try again.")
       } finally {
         setIsActivating(false)
       }
@@ -149,28 +129,13 @@ export function Membership() {
           }
 
           activateMembership(plan.duration)
-          
-          toast({
-            title: "Membership Activated",
-            description: `Your ${selectedOption} membership is now active. All service fees are waived and SmartDCA.ai is now accessible!`,
-            variant: "default",
-          })
-
           setIsPaymentDialogOpen(false)
         } else {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to activate membership",
-            variant: "destructive",
-          })
+          setError(result.error || "Failed to activate membership")
         }
       } catch (error) {
         console.error("Error activating membership:", error)
-        toast({
-          title: "Error",
-          description: "Failed to activate membership. Please try again.",
-          variant: "destructive",
-        })
+        setError("Failed to activate membership. Please try again.")
       } finally {
         setIsActivating(false)
       }
@@ -309,9 +274,17 @@ export function Membership() {
           </motion.div>
         </>
       )}
+      {error && (
+        <div className="p-4 text-red-600 bg-red-50 rounded-lg">
+          {error}
+        </div>
+      )}
       <PaymentChoiceDialog
         isOpen={isPaymentDialogOpen}
-        onClose={() => setIsPaymentDialogOpen(false)}
+        onClose={() => {
+          setIsPaymentDialogOpen(false)
+          setError(null)
+        }}
         onActivate={handlePaymentChoice}
         solPrice={membershipOptions[selectedOption].solPrice}
         usdPrice={membershipOptions[selectedOption].usdPrice}

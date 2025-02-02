@@ -5,12 +5,10 @@ import { Membership, membershipOptions } from "@/components/membership"
 import { AnimatedDescription } from "@/components/animated-description"
 import { useSearchParams } from "next/navigation"
 import { useMembership } from "@/contexts/membership-context"
-import { useToast } from "@/components/ui/use-toast"
 
 export default function MembershipPage() {
   const searchParams = useSearchParams()
-  const { activateMembership } = useMembership()
-  const { toast } = useToast()
+  const { setIsActive } = useMembership()
 
   useEffect(() => {
     const success = searchParams.get("success") === "true"
@@ -18,14 +16,10 @@ export default function MembershipPage() {
 
     if (success && priceId) {
       const duration = priceId === membershipOptions.weekly.stripePriceId ? 7 : 30
-      activateMembership(duration)
-      toast({
-        title: "Membership Activated",
-        description: `Your ${duration === 7 ? "weekly" : "monthly"} membership is now active. All service fees are waived and SmartDCA.ai is now accessible!`,
-        variant: "default",
-      })
+      setIsActive(true)
+      console.log(`Membership activated for ${duration} days`)
     }
-  }, [searchParams, activateMembership, toast])
+  }, [searchParams, setIsActive])
 
   return (
     <div className="container py-8">
