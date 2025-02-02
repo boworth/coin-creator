@@ -1,1 +1,21 @@
- 
+{
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "NEXT_PUBLIC_VERCEL_ENV": "production"
+  },
+  "headers": [
+    {
+      "source": "/api/stripe-webhook",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    }
+  ]
+} 
