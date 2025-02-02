@@ -1,4 +1,4 @@
-"\"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import { Connection, PublicKey } from "@solana/web3.js"
 import { sendSolPayment, RECEIVER_ADDRESS } from "@/lib/solana-utils"
 import { MembershipService } from "@/src/services/membership-service"
 import { Spinner } from "@/components/ui/spinner"
+import { membershipOptions } from "@/lib/membership-options"
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -60,7 +61,7 @@ const LoadingDots = () => (
   </span>
 );
 
-export function Membership() {
+export const Membership = () => {
   const { isActive, timeRemaining, isLoading, activateMembership } = useMembership()
   const [selectedOption, setSelectedOption] = useState<MembershipOption>("monthly")
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)

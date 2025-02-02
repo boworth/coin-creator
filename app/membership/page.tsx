@@ -1,11 +1,11 @@
 "use client"
 
 import { useEffect } from "react"
-import { Membership, membershipOptions } from "@/components/membership"
-import { AnimatedDescription } from "@/components/animated-description"
+import { Membership } from "../../components/membership"
+import { AnimatedDescription } from "../../components/animated-description"
 import { useSearchParams } from "next/navigation"
-import { useMembership } from "@/contexts/membership-context"
-import { useToast } from "@/components/ui/use-toast"
+import { useMembership } from "../../contexts/membership-context"
+import { useToast } from "../../components/ui/use-toast"
 
 export default function MembershipPage() {
   const searchParams = useSearchParams()
