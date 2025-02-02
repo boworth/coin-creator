@@ -4,8 +4,9 @@ import { useEffect } from "react"
 import { Membership } from "../../components/membership"
 import { AnimatedDescription } from "../../components/animated-description"
 import { useSearchParams } from "next/navigation"
-import { useMembership } from "../../contexts/membership-context"
+import { useMembership } from "@/contexts/membership-context"
 import { useToast } from "../../components/ui/use-toast"
+import { membershipOptions } from "@/lib/membership-options"
 
 export default function MembershipPage() {
   const searchParams = useSearchParams()
@@ -21,8 +22,7 @@ export default function MembershipPage() {
       activateMembership(duration)
       toast({
         title: "Membership Activated",
-        description: `Your ${duration === 7 ? "weekly" : "monthly"} membership is now active. All service fees are waived and SmartDCA.ai is now accessible!`,
-        variant: "default",
+        description: `Your ${duration === 7 ? "weekly" : "monthly"} membership is now active. All service fees are waived and SmartDCA.ai is now accessible!`
       })
     }
   }, [searchParams, activateMembership, toast])

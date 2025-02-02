@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     const duration = planId === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000
 
-    await updateMembershipStatus(walletAddress, duration)
+    await updateMembershipStatus(walletAddress, planId)
 
     return NextResponse.json({ success: true })
   } catch (error) {

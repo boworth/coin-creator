@@ -6,6 +6,9 @@ import { Connection, PublicKey } from "@solana/web3.js"
 import { WalletContextState } from "@solana/wallet-adapter-react"
 import { Metaplex } from "@metaplex-foundation/js"
 import { walletAdapterIdentity } from "@metaplex-foundation/js"
+import { TokenTestBench } from './token-test-bench'
+import { MetadataTestBench } from './metadata-test-bench'
+import { TokenBurnTestBench } from './token-burn-test-bench'
 
 export class TokenService {
   private static getMetaplex(connection: Connection, wallet: WalletContextState) {

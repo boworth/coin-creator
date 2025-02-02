@@ -13,17 +13,16 @@ import { PaymentChoiceDialog } from "@/components/payment-choice-dialog"
 import { motion } from "framer-motion"
 import { useWallet, useConnection } from "@solana/wallet-adapter-react"
 import { Connection, PublicKey } from "@solana/web3.js"
-import { sendSolPayment, RECEIVER_ADDRESS } from "@/lib/solana-utils"
-import { MembershipService } from "@/src/services/membership-service"
 import { Spinner } from "@/components/ui/spinner"
 import { membershipOptions } from "@/lib/membership-options"
+import { MembershipService } from "@/services/membership-service"
+
+type MembershipOption = keyof typeof membershipOptions;
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-type MembershipOption = "weekly" | "monthly"
-
-const LoadingDots = () => (
-  <span className="loading-dots inline-block w-[24px] text-left">
+const LoadingDots = ({ className }: { className?: string }) => (
+  <span className={`loading-dots inline-block w-[24px] text-left ${className}`}>
     <style jsx>{`
       .loading-dots {
         text-align: left;
@@ -45,15 +44,15 @@ const LoadingDots = () => (
 );
 
 export const Membership = () => {
-  const { isActive, timeRemaining, isLoading, activateMembership } = useMembership()
+  const { isActive, timeRemaining = 0, isLoading, activateMembership } = useMembership()
   const [selectedOption, setSelectedOption] = useState<MembershipOption>("monthly")
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
   const { toast } = useToast()
-  const { publicKey, connected, wallet: walletContext } = useWallet()
+  const walletContext = useWallet()
   const { connection } = useConnection()
   const membershipService = new MembershipService(
-    connection, 
-    walletContext?.adapter
+    connection,
+    walletContext
   )
   const [isActivating, setIsActivating] = useState(false)
 
@@ -63,7 +62,7 @@ export const Membership = () => {
 
   const handlePaymentChoice = async (method: "sol" | "stripe") => {
     if (method === "stripe") {
-      if (!publicKey) {
+      if (!walletContext.publicKey) {
         toast({
           title: "Error",
           description: "Please connect your wallet first",
@@ -74,7 +73,7 @@ export const Membership = () => {
 
       console.log('Payment details:', {
         priceId: membershipOptions[selectedOption].stripePriceId,
-        walletAddress: publicKey.toBase58(),
+        walletAddress: walletContext.publicKey.toBase58(),
         selectedOption,
       })
 
@@ -89,7 +88,7 @@ export const Membership = () => {
           },
           body: JSON.stringify({
             priceId: membershipOptions[selectedOption].stripePriceId,
-            walletAddress: publicKey.toBase58(),
+            walletAddress: walletContext.publicKey.toBase58(),
           }),
         })
         const session = await response.json()
@@ -300,10 +299,10 @@ export const Membership = () => {
         solPrice={membershipOptions[selectedOption].solPrice}
         usdPrice={membershipOptions[selectedOption].usdPrice}
         isActivating={isActivating}
-        LoadingDots={LoadingDots}
+        LoadingDots={() => <LoadingDots />}
         priceId={membershipOptions[selectedOption].stripePriceId!}
-        walletAddress={publicKey?.toBase58() || ''}
-        isWalletConnected={connected}
+        walletAddress={walletContext.publicKey?.toBase58() || ''}
+        isWalletConnected={walletContext.connected}
       />
     </div>
   )

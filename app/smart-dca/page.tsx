@@ -6,10 +6,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChevronRight, BarChart2, Zap, Shield, RefreshCcw } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
 import { useMembership } from "@/contexts/membership-context"
+import { redirect } from 'next/navigation'
+
+// Add this type guard at the top of the file
+const isProduction = process.env.NODE_ENV === 'production'
 
 export default function SmartDCADescription() {
   const { isActive } = useMembership()
 
+  // Handle production case first
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      <div className="container mx-auto py-24 text-center">
+        <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl mb-6">
+          SmartDCA<span className="text-blue-600">.ai</span>
+        </h1>
+        <p className="text-xl text-gray-600 mb-8">
+          Coming Soon! Our intelligent DCA solution is currently in development.
+        </p>
+        <p className="text-gray-500">
+          Stay tuned for updates on our revolutionary DCA trading algorithm.
+        </p>
+      </div>
+    )
+  }
+
+  // Development-only code below
   return (
     <div className="min-h-screen relative font-sans">
       <AnimatedBackground />
@@ -35,15 +57,16 @@ export default function SmartDCADescription() {
                   </Button>
                 </Link>
               ) : (
-                <Link href="/membership">
-                  <Button
-                    size="lg"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
-                  >
-                    Become a Member
+                <Button
+                  size="lg"
+                  className="bg-gray-400 hover:bg-gray-400 text-white font-bold py-4 px-8 rounded-full transition duration-300 ease-in-out transform cursor-not-allowed"
+                  disabled={isProduction}
+                >
+                  {isProduction ? 'Coming Soon' : 'Become a Member'}
+                  {!isProduction && (
                     <ChevronRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+                  )}
+                </Button>
               )}
             </div>
           </div>

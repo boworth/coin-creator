@@ -1,13 +1,13 @@
 import { Connection, PublicKey } from "@solana/web3.js"
 import { WalletContextState } from "@solana/wallet-adapter-react"
-import { TokenTestBench } from "@/src/testbench/token-test-bench"
-import { MetadataTestBench } from "@/src/testbench/metadata-test-bench"
+import { TokenTestBench } from "@/testbench/token-test-bench"
+import { MetadataTestBench } from "@/testbench/metadata-test-bench"
 import { Metaplex } from "@metaplex-foundation/js"
 import { walletAdapterIdentity } from "@metaplex-foundation/js"
 import { Keypair, Transaction, sendAndConfirmTransaction, TransactionMessage, VersionedTransaction, ComputeBudgetProgram } from "@solana/web3.js"
-import { getAssociatedTokenAddress, findMetadataPda, createInitializeMintInstruction, createCreateMetadataAccountV3Instruction, createAssociatedTokenAccountInstruction } from "@solana/spl-token"
-import { AnchorWallet } from "@solana/wallet-adapter-anchor"
-import { TokenBurnTestBench } from "@/src/testbench/token-burn-test-bench"
+import { getAssociatedTokenAddress, createInitializeMintInstruction, createAssociatedTokenAccountInstruction } from "@solana/spl-token"
+import { createCreateMetadataAccountV3Instruction } from "@metaplex-foundation/mpl-token-metadata"
+import { TokenBurnTestBench } from "@/testbench/token-burn-test-bench"
 import { PaymentHandler } from "./payment-handler"
 
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
@@ -92,7 +92,7 @@ export class TokenService {
   private tokenBench: TokenTestBench
   private metadataBench: MetadataTestBench
   private connection: Connection
-  private wallet: AnchorWallet
+  private wallet: WalletContextState
   private tokenBurnBench: TokenBurnTestBench
   private paymentHandler: PaymentHandler
 
@@ -108,7 +108,7 @@ export class TokenService {
     }
     
     this.connection = connection;
-    this.wallet = wallet as unknown as AnchorWallet;
+    this.wallet = wallet;
     this.tokenBench = new TokenTestBench(connection, wallet);
     this.metadataBench = new MetadataTestBench(connection, wallet);
     this.tokenBurnBench = new TokenBurnTestBench(connection, wallet);
@@ -196,7 +196,8 @@ export class TokenService {
         }
 
         // Sign with mint keypair
-        transaction.sign(mintKeypair);
+        const properMintKeypair = Keypair.fromSecretKey(mintKeypair.secretKey);
+        transaction.sign(properMintKeypair);
 
         // Send transaction
         const signature = await this.wallet.sendTransaction(transaction, this.connection, {
@@ -225,6 +226,7 @@ export class TokenService {
             success: false,
             mintAddress: "",
             signature: "",
+            verifications: {},
             error: error instanceof Error ? error.message : "Token creation failed"
         };
     }
@@ -380,12 +382,12 @@ export class TokenService {
         const nft = await metaplex.nfts().findByMint({ mintAddress });
         
         // Get the off-chain metadata
-        let offChainMetadata = {};
+        let offChainMetadata: any = {};
         if (nft.uri) {
             try {
                 const response = await fetch(nft.uri);
                 if (response.ok) {
-                    offChainMetadata = await response.json();
+                    offChainMetadata = await response.json() as any;
                 }
             } catch (error) {
                 console.error('Failed to fetch off-chain metadata:', error);
@@ -478,4 +480,32 @@ export class TokenService {
         throw new Error('Failed to upload to Cloudinary');
     }
   }
-} 
+}
+
+/**
+ * Token Service
+ * 
+ * This is a stub implementation.
+ * Replace or expand these functions as needed.
+ */
+
+/**
+ * Creates a token with the provided data.
+ * @param data - token data
+ * @returns a dummy token
+ */
+export const createToken = (data: any) => {
+  // Implement your token creation logic here
+  return { token: "dummy-token", ...data };
+};
+
+/**
+ * Updates metadata for an existing token.
+ * @param tokenId - the ID of the token to update
+ * @param metadata - metadata to merge/update
+ * @returns success flag
+ */
+export const updateTokenMetadata = (tokenId: string, metadata: any) => {
+  // Implement your token metadata update logic here
+  return { success: true, tokenId, metadata };
+}; 

@@ -1,14 +1,42 @@
 "use client"
 
-import { Metaplex, walletAdapterIdentity } from "@metaplex-foundation/js"
+import { Metaplex, walletAdapterIdentity, guestIdentity } from "@metaplex-foundation/js"
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react"
+import { ConnectionProvider, WalletProvider, useWallet } from "@solana/wallet-adapter-react"
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import { clusterApiUrl, Connection } from "@solana/web3.js"
-import { useMemo, useCallback } from "react"
+import { useMemo, useCallback, createContext, useContext } from "react"
 
 // Import wallet adapter CSS
 require("@solana/wallet-adapter-react-ui/styles.css")
+
+// Create Metaplex context
+const MetaplexContext = createContext<Metaplex | null>(null)
+
+export function useMetaplex() {
+  const context = useContext(MetaplexContext)
+  if (!context) {
+    throw new Error('useMetaplex must be used within a MetaplexProvider')
+  }
+  return context
+}
+
+function MetaplexProvider({ connection, children }: { connection: Connection; children: React.ReactNode }) {
+  const { wallet } = useWallet()
+  
+  const mx = useMemo(() => {
+    const base = Metaplex.make(connection)
+    return wallet?.adapter 
+      ? base.use(walletAdapterIdentity(wallet.adapter))
+      : base.use(guestIdentity()) // Add default identity if needed
+  }, [connection, wallet])
+
+  return (
+    <MetaplexContext.Provider value={mx}>
+      {children}
+    </MetaplexContext.Provider>
+  )
+}
 
 export function WalletProviders({ children }: { children: React.ReactNode }) {
   // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
@@ -35,12 +63,6 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
     []
   )
 
-  // Initialize Metaplex
-  const mx = useMemo(() => {
-    return Metaplex.make(connection)
-      .use(walletAdapterIdentity())
-  }, [connection])
-
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider 
@@ -50,7 +72,9 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
         localStorageKey="wallet-type"
       >
         <WalletModalProvider>
-          {children}
+          <MetaplexProvider connection={connection}>
+            {children}
+          </MetaplexProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

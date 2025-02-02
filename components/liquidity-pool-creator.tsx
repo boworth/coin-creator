@@ -106,9 +106,10 @@ export function LiquidityPoolCreator() {
         description: `Created pool for ${values.tokenAmount} of your tokens and ${values.initialLiquidity} ${values.pairedToken} with ${values.fee}% fee tier`,
       })
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create liquidity pool'
       toast({
         title: "Error creating liquidity pool",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

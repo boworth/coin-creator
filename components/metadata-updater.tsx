@@ -14,16 +14,17 @@ import { useToast } from "@/components/ui/use-toast"
 import Image from "next/image"
 import { Separator } from "@/components/ui/separator"
 import { useMembership } from "@/contexts/membership-context"
-import { TokenService, MetadataUpdateParams } from "@/src/services/token-service"
-import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { Connection, PublicKey, WalletContextState } from "@solana/web3.js"
-import { AnchorWallet } from "@solana/wallet-adapter-wallets"
+import { TokenService } from "@/services/token-service"
+import { useConnection, useWallet, WalletContextState } from "@solana/wallet-adapter-react"
+import { Connection, PublicKey } from "@solana/web3.js"
 import { Upload, X } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { motion } from "framer-motion"
-import { Alert, AlertCircle, AlertDescription, AlertTitle, AlertClassName } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Check } from "lucide-react"
 import Link from "next/link"
+import { InfoCircledIcon } from "@radix-ui/react-icons"
+import { MetadataUpdateParams } from '@/services/token-service'
 
 const urlSchema = z
   .string()
@@ -60,6 +61,7 @@ const formSchema = z.object({
     .min(1, "Token symbol is required")
     .max(10, "Token symbol must not be longer than 10 characters"),
   description: z.string().optional(),
+  logo: z.any().optional(),
   youtubePreview: urlSchema,
   coverImage: z.any().optional(),
   coverImageUrl: urlSchema,
@@ -109,6 +111,7 @@ export function MetadataUpdater() {
       instagram: "",
       reddit: "",
       facebook: "",
+      logo: undefined,
     },
   })
 
@@ -118,7 +121,7 @@ export function MetadataUpdater() {
 
   const fetchMetadata = async (address: string, connection: Connection, wallet: WalletContextState) => {
     try {
-      const service = new TokenService(connection, wallet as AnchorWallet)
+      const service = new TokenService(connection, wallet)
       const metadata = await service.getTokenMetadata(new PublicKey(address))
       return metadata
     } catch (error) {
@@ -196,7 +199,7 @@ export function MetadataUpdater() {
       const result = await service.updateMetadata(values)
       
       if (!result.success) {
-        throw new Error(result.error || 'Failed to update metadata')
+        throw new Error('Failed to update metadata')
       }
 
       toast({
@@ -222,7 +225,7 @@ export function MetadataUpdater() {
     setError(null);
     
     try {
-        const service = new TokenService(connection, wallet as AnchorWallet);
+        const service = new TokenService(connection, wallet);
         await service.updateMetadata({
             mintAddress: data.tokenAddress,
             name: data.tokenName || undefined,

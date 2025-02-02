@@ -49,8 +49,12 @@ export async function createToken({
     // For simplicity, we're just returning the mint address here.
     return { success: true, mint: mint.toBase58() }
   } catch (error) {
-    console.error("Error creating token:", error)
-    return { success: false, error: error.message }
+    console.error("Error creating token:", error);
+    let errorMessage = "An unknown error occurred";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return { success: false, error: errorMessage };
   }
 }
 

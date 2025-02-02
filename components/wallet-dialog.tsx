@@ -28,7 +28,7 @@ export function WalletDialog({ isOpen, onClose, onConnect }: WalletDialogProps) 
               className="w-full justify-start text-left font-normal"
             >
               <Image
-                src={wallet.logo || "/placeholder.svg"}
+                src={wallet.icon || "/placeholder.svg"}
                 alt={`${wallet.name} logo`}
                 width={24}
                 height={24}

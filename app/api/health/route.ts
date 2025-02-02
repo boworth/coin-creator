@@ -2,14 +2,17 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    // Add your health checks here (e.g., DB connection)
+    // Add actual health checks here
     return NextResponse.json(
-      { status: 'healthy', timestamp: new Date().toISOString() },
+      { status: 'healthy' },
       { status: 200 }
     )
   } catch (error) {
     return NextResponse.json(
-      { status: 'unhealthy', error: error.message },
+      { 
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

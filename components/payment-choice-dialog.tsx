@@ -9,7 +9,7 @@ import { Wallet, CreditCard } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { loadStripe } from "@stripe/stripe-js"
 import { useSearchParams } from 'next/navigation'
-import { MembershipService } from "@/src/services/membership-service"
+import membershipService from '@/services/membership-service'
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' 
@@ -30,8 +30,8 @@ interface PaymentChoiceDialogProps {
   isWalletConnected: boolean
 }
 
-const Spinner = () => (
-  <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50 rounded-lg">
+const Spinner = ({ className }: { className?: string }) => (
+  <div className={`absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50 rounded-lg ${className}`}>
     <span className="spinner">
       <style jsx>{`
         .spinner {
@@ -104,14 +104,14 @@ export function PaymentChoiceDialog({
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<"sol" | "stripe">("sol")
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get('session_id')
+  const sessionId = searchParams?.get('session_id')
   const [isMembershipActive, setIsMembershipActive] = useState(false)
 
   useEffect(() => {
     const validateSession = async () => {
       if (sessionId) {
         try {
-          const session = await MembershipService.checkStripeSession(sessionId)
+          const session = await membershipService.checkStripeSession(sessionId)
           if (session.payment_status === 'paid') {
             setIsMembershipActive(true)
             // Optional: Trigger a global state update or refresh
@@ -249,7 +249,7 @@ export function PaymentChoiceDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] relative fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
-        {(isActivating || isProcessing) && <Spinner />}
+        {(isActivating || isProcessing) && <Spinner className="opacity-50" />}
         <div className={isActivating || isProcessing ? 'opacity-50 pointer-events-none' : ''}>
           <DialogHeader>
             <DialogTitle>Choose Payment Method</DialogTitle>

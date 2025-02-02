@@ -1,7 +1,7 @@
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 import { TREASURY_WALLET } from "./payment-handler";
-import { stripe } from '@/lib/stripe'
+import stripe from '@/lib/stripe'
 
 export interface MembershipPlan {
     id: string;
@@ -28,9 +28,12 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
     }
 ];
 
+/**
+ * MembershipService provides helper methods to work with membership functionality.
+ */
 export class MembershipService {
-    private connection: Connection;
-    private wallet: WalletContextState;
+    connection: Connection;
+    wallet: WalletContextState;
 
     constructor(connection: Connection, wallet: WalletContextState) {
         this.connection = connection;
@@ -174,24 +177,30 @@ export class MembershipService {
         }
     }
 
-    // DELETE THIS ENTIRE METHOD
-    // async checkStripeSession(sessionId: string) {
-    //     // Method implementation removed
-    // }
+    static async checkStripeSession(sessionId: string): Promise<{ payment_status: string }> {
+        const response = await fetch(`/api/check-session?session_id=${sessionId}`)
+        if (!response.ok) {
+            throw new Error('Failed to verify payment session')
+        }
+        return response.json()
+    }
+
+    // Example method: Get membership status (dummy implementation)
+    async getStatus() {
+        // Replace this with your actual logic.
+        return {
+            isActive: true,
+            expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,  // expires in 30 days
+        };
+    }
 }
 
 export async function checkStripeSession(sessionId: string) {
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ['customer', 'subscription']
-  })
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  return session;
+}
 
-  if (!session.customer || !session.subscription) {
-    throw new Error('Invalid session data')
-  }
-
-  return {
-    payment_status: session.payment_status,
-    customer_id: session.customer,
-    subscription_id: session.subscription
-  }
-} 
+export default {
+  checkStripeSession,
+  // Add other methods here if needed.
+}; 

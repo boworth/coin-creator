@@ -9,7 +9,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useMembership } from '@/contexts/membership-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Link } from 'react-router-dom';
+import Link from "next/link"
 
 interface BurnTokenProps {
     onBurnComplete?: () => void;

@@ -44,6 +44,10 @@ export async function POST(request: Request) {
         }
 
         const membershipType = session.metadata?.membershipType
+        if (!membershipType || !['weekly', 'monthly'].includes(membershipType)) {
+          throw new Error('Invalid membership type in session metadata')
+        }
+
         const duration = membershipType === 'weekly' ? 7 * 24 * 60 * 60 * 1000 : 30 * 24 * 60 * 60 * 1000
 
         console.log('🔄 Activating membership:', {
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
         })
 
         // Update membership directly using the storage function
-        await updateMembershipStatus(walletAddress, duration)
+        await updateMembershipStatus(walletAddress, membershipType)
         console.log("✅ Membership activated successfully")
 
         // Verify the membership was actually updated

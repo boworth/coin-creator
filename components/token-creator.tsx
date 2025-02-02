@@ -16,13 +16,14 @@ import { motion } from "framer-motion"
 import { Label } from "@/components/ui/label"
 import { useMembership } from "@/contexts/membership-context"
 import { Membership } from "@/components/membership"
-import { TokenService, TokenCreationParams } from "@/src/services/token-service"
+import { TokenService } from "@/services/token-service"
 import { ErrorBoundary } from "react-error-boundary"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
+import { TokenCreationParams } from '@/services/token-service'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
@@ -209,9 +210,6 @@ export function TokenCreator() {
       revokeFreezeAuthority: false,
     },
     mode: "onChange",
-    onError: (errors) => {
-      console.error("Form validation errors:", errors)
-    },
   })
 
   const tokenName = form.watch("tokenName")
@@ -423,7 +421,7 @@ export function TokenCreator() {
                         toast({
                           variant: "destructive",
                           title: `Invalid ${field}`,
-                          description: error?.message
+                          description: (error as { message?: string })?.message || "Invalid field value"
                         })
                       })
                       return

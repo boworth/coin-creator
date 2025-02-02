@@ -55,9 +55,10 @@ export function LiquidityPoolManager({ pools }: LiquidityPoolManagerProps) {
       })
       form.reset()
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to modify liquidity'
       toast({
         title: `Error ${action === "add" ? "Adding" : "Removing"} Liquidity`,
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
